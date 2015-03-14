@@ -25,7 +25,7 @@ GridBlock::~GridBlock(void){
 	Componenet=NULL;
 }
 
-void GridBlock::SetIndex(int Ix, int Iy, INT Iz) {
+void GridBlock::SetIndex(int Ix, int Iy, int Iz) {
 	Index=Iz*(Ny*Nx)+Iy*Nx+Ix;
 }
 
@@ -37,10 +37,10 @@ int GridBlock::ReadGridProperties(ifstream InputFile) {
 	if (!File_Search(InputFile, "DI")) TerM("No DI keyword in the input file!");
 	if (!Read_Word(InputFile, str)) TerM("Incorrect DI keyword format in the input file!");
 	if (!strcmp(str, "VAR")) for (i=0; i<Index; i++) { 
-		if (!Read_Word(ifstream, str1)) TerM("Incorrect DI keyword format in the input file!");		
+		if (!Read_Word(InputFile, str1)) TerM("Incorrect DI keyword format in the input file!");		
 	}
 	else if (!strcmp(str, "CON")){
-		if (!Read_Word(ifstream, str1)) TerM("Incorrect DI keyword format in the input file!");		
+		if (!Read_Word(InputFile, str1)) TerM("Incorrect DI keyword format in the input file!");		
 	}
 	else {
 		TerM("Incorrect DI keyword format in the input file!");
@@ -50,10 +50,10 @@ int GridBlock::ReadGridProperties(ifstream InputFile) {
 	if (!File_Search(InputFile, "DJ")) TerM("No DJ keyword in the input file!");
 	if (!Read_Word(InputFile, str)) TerM("Incorrect DJ keyword format in the input file!");
 	if (!strcmp(str, "VAR")) for (i=0; i<Index; i++) { 
-		if (!Read_Word(ifstream, str1)) TerM("Incorrect DJ keyword format in the input file!");		
+		if (!Read_Word(InputFile, str1)) TerM("Incorrect DJ keyword format in the input file!");		
 	}
 	else if (!strcmp(str, "CON")){
-		if (!Read_Word(ifstream, str1)) TerM("Incorrect DJ keyword format in the input file!");		
+		if (!Read_Word(InputFile, str1)) TerM("Incorrect DJ keyword format in the input file!");		
 	}
 	else {
 		TerM("Incorrect DJ keyword format in the input file!");
@@ -63,10 +63,10 @@ int GridBlock::ReadGridProperties(ifstream InputFile) {
 	if (!File_Search(InputFile, "DK")) TerM("No DK keyword in the input file!");
 	if (!Read_Word(InputFile, str)) TerM("Incorrect DK keyword format in the input file!");
 	if (!strcmp(str, "VAR")) for (i=0; i<Index; i++) { 
-		if (!Read_Word(ifstream, str1)) TerM("Incorrect DK keyword format in the input file!");		
+		if (!Read_Word(InputFile, str1)) TerM("Incorrect DK keyword format in the input file!");		
 	}
 	else if (!strcmp(str, "CON")){
-		if (!Read_Word(ifstream, str1)) TerM("Incorrect DK keyword format in the input file!");		
+		if (!Read_Word(InputFile, str1)) TerM("Incorrect DK keyword format in the input file!");		
 	}
 	else {
 		TerM("Incorrect DK keyword format in the input file!");
