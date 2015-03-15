@@ -37,10 +37,10 @@ int GridBlock::ReadGridProperties(ifstream InputFile) {
 	if (!File_Search(InputFile, "DI")) TerM("No DI keyword in the input file!");
 	if (!Read_Word(InputFile, str)) TerM("Incorrect DI keyword format in the input file!");
 	if (!strcmp(str, "VAR")) for (i=0; i<Index; i++) { 
-		if (!Read_Word(ifstream, str1)) TerM("Incorrect DI keyword format in the input file!");		
+		if (!Read_Word(InputFile, str1)) TerM("Incorrect DI keyword format in the input file!");		
 	}
 	else if (!strcmp(str, "CON")){
-		if (!Read_Word(ifstream, str1)) TerM("Incorrect DI keyword format in the input file!");		
+		if (!Read_Word(InputFile, str1)) TerM("Incorrect DI keyword format in the input file!");		
 	}
 	else {
 		TerM("Incorrect DI keyword format in the input file!");
@@ -50,10 +50,10 @@ int GridBlock::ReadGridProperties(ifstream InputFile) {
 	if (!File_Search(InputFile, "DJ")) TerM("No DJ keyword in the input file!");
 	if (!Read_Word(InputFile, str)) TerM("Incorrect DJ keyword format in the input file!");
 	if (!strcmp(str, "VAR")) for (i=0; i<Index; i++) { 
-		if (!Read_Word(ifstream, str1)) TerM("Incorrect DJ keyword format in the input file!");		
+		if (!Read_Word(InputFile, str1)) TerM("Incorrect DJ keyword format in the input file!");		
 	}
 	else if (!strcmp(str, "CON")){
-		if (!Read_Word(ifstream, str1)) TerM("Incorrect DJ keyword format in the input file!");		
+		if (!Read_Word(InputFile, str1)) TerM("Incorrect DJ keyword format in the input file!");		
 	}
 	else {
 		TerM("Incorrect DJ keyword format in the input file!");
@@ -63,15 +63,42 @@ int GridBlock::ReadGridProperties(ifstream InputFile) {
 	if (!File_Search(InputFile, "DK")) TerM("No DK keyword in the input file!");
 	if (!Read_Word(InputFile, str)) TerM("Incorrect DK keyword format in the input file!");
 	if (!strcmp(str, "VAR")) for (i=0; i<Index; i++) { 
-		if (!Read_Word(ifstream, str1)) TerM("Incorrect DK keyword format in the input file!");		
+		if (!Read_Word(InputFile, str1)) TerM("Incorrect DK keyword format in the input file!");		
 	}
 	else if (!strcmp(str, "CON")){
-		if (!Read_Word(ifstream, str1)) TerM("Incorrect DK keyword format in the input file!");		
+		if (!Read_Word(InputFile, str1)) TerM("Incorrect DK keyword format in the input file!");		
 	}
 	else {
 		TerM("Incorrect DK keyword format in the input file!");
 	}
 	Dimension[2]=atof(str1);
+	
+	//////porosity
+	//////////////
+	if (!File_Search(InputFile, "POR")) TerM("No POR keyword in the input file!");
+	if (!Read_Word(InputFile, str1)) TerM("Incorrect POR keyword format in the input file!");
+	if (!strcmp(str1, "VAR")) for (i = 0; i < Index+1; i++) {
+		if (!Read_Word(InputFile, str1)) TerM("Incorrect POR keyword format in the input file!");
+		}
+	else if (!strcmp(str1, "CON")){
+		if (!Read_Word(InputFile, str1)) TerM("Incorrect POR keyword format in the input file!");
+		}
+						// i < Ix
+	else if (!strcmp(str1, "IVAR")) for (i = 0; i < (Index%Nx)+1; i++){
+		if (!Read_Word(InputFile, str1)) TerM("Incorrect POR keyword format in the input file!");
+		}
+						// i < Ij
+	else if (!strcmp(str1, "JVAR")) for (i = 0; i < (((Index - (Index%Nx)) / Nx) % Ny)+1; i++){
+		if (!Read_Word(InputFile, str1)) TerM("Incorrect POR keyword format in the input file!");
+		}
+						// i << Ik
+	else if (!strcmp(str1, "KVAR")) for (i = 0; i < (Index - ((Index%Nx)*Nx) - ((((Index - (Index%Nx)) / Nx) % Ny)*Ny) / (Nx*Ny))+1; i++){
+		if (!Read_Word(InputFile, str1)) TerM("Incorrect POR keyword format in the input file!");
+		}
+	else {
+	TerM("Incorrect POR keyword format in the input file!");
+	}
+	Porosity = atof(str1);
 	
 	return 0;
 }
