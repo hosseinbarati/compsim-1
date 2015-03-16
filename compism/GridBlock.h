@@ -25,7 +25,7 @@ GridBlock::~GridBlock(void){
 	Componenet=NULL;
 }
 
-void GridBlock::SetIndex(int Ix, int Iy, INT Iz) {
+void GridBlock::SetIndex(int Ix, int Iy, int Iz) {
 	Index=Iz*(Ny*Nx)+Iy*Nx+Ix;
 }
 
@@ -79,26 +79,162 @@ int GridBlock::ReadGridProperties(ifstream InputFile) {
 	if (!Read_Word(InputFile, str1)) TerM("Incorrect POR keyword format in the input file!");
 	if (!strcmp(str1, "VAR")) for (i = 0; i < Index+1; i++) {
 		if (!Read_Word(InputFile, str1)) TerM("Incorrect POR keyword format in the input file!");
-		}
+	}
 	else if (!strcmp(str1, "CON")){
 		if (!Read_Word(InputFile, str1)) TerM("Incorrect POR keyword format in the input file!");
-		}
+	}
 						// i < Ix
 	else if (!strcmp(str1, "IVAR")) for (i = 0; i < (Index%Nx)+1; i++){
 		if (!Read_Word(InputFile, str1)) TerM("Incorrect POR keyword format in the input file!");
-		}
+	}
 						// i < Ij
 	else if (!strcmp(str1, "JVAR")) for (i = 0; i < (((Index - (Index%Nx)) / Nx) % Ny)+1; i++){
 		if (!Read_Word(InputFile, str1)) TerM("Incorrect POR keyword format in the input file!");
-		}
+	}
 						// i << Ik
 	else if (!strcmp(str1, "KVAR")) for (i = 0; i < (Index - ((Index%Nx)*Nx) - ((((Index - (Index%Nx)) / Nx) % Ny)*Ny) / (Nx*Ny))+1; i++){
 		if (!Read_Word(InputFile, str1)) TerM("Incorrect POR keyword format in the input file!");
-		}
+	}
 	else {
 	TerM("Incorrect POR keyword format in the input file!");
 	}
 	Porosity = atof(str1);
 	
+	//PERMEABILITY
+	if (!File_Search(InputFile, "PERMI")) TerM("No PERMI keyword in the input file!");
+	if (!Read_Word(InputFile, str)) TerM("Incorrect PERMI keyword format in the input file!");
+	if (!strcmp(str, "VAR")) for (i = 0; i<Index+1; i++) {
+		if (!Read_Word(InputFile, str1)) TerM("Incorrect PERMI keyword format in the input file!");
+	}
+	else if (!strcmp(str, "CON")) {
+		if (!Read_Word(InputFile, str1)) TerM("Incorrect PERMI keyword format in the input file!");
+	}
+	else if (!strcmp(str1, "IVAR")) for (i = 0; i < (Index%Nx)+1; i++){
+		if (!Read_Word(InputFile, str1)) TerM("Incorrect PERMI keyword format in the input file!");
+	}
+	else if (!strcmp(str1, "JVAR")) for (i = 0; i < (((Index - (Index%Nx)) / Nx) % Ny)+1; i++){
+		if (!Read_Word(InputFile, str1)) TerM("Incorrect PERMI keyword format in the input file!");
+	}
+	else if (!strcmp(str1, "KVAR")) for (i = 0; i < (Index - ((Index%Nx)*Nx) - ((((Index - (Index%Nx)) / Nx) % Ny)*Ny) / (Nx*Ny))+1; i++){
+		if (!Read_Word(InputFile, str1)) TerM("Incorrect PERMI keyword format in the input file!");
+	}
+	else {
+		TerM("Incorrect PERMI keyword format in the input file!");
+	}
+	Permeability[0] = atof(str1);
+
+	if (!File_Search(InputFile, "PERMJ")) TerM("No PERMJ keyword in the input file!");
+	if (!Read_Word(InputFile, str)) TerM("Incorrect PERMJ keyword format in the input file!");
+	if (!strcmp(str, "VAR")) for (i = 0; i<Index+1; i++) {
+		if (!Read_Word(InputFile, str1)) TerM("Incorrect PERMJ keyword format in the input file!");
+	}
+	else if (!strcmp(str, "CON")) {
+		if (!Read_Word(InputFile, str1)) TerM("Incorrect PERMJ keyword format in the input file!");
+	}
+	else if (!strcmp(str1, "IVAR")) for (i = 0; i < (Index%Nx)+1; i++){
+		if (!Read_Word(InputFile, str1)) TerM("Incorrect PERMJ keyword format in the input file!");
+	}
+	else if (!strcmp(str1, "JVAR")) for (i = 0; i < (((Index - (Index%Nx)) / Nx) % Ny)+1; i++){
+		if (!Read_Word(InputFile, str1)) TerM("Incorrect PERMJ keyword format in the input file!");
+	}
+	else if (!strcmp(str1, "KVAR")) for (i = 0; i < (Index - ((Index%Nx)*Nx) - ((((Index - (Index%Nx)) / Nx) % Ny)*Ny) / (Nx*Ny))+1; i++){
+		if (!Read_Word(InputFile, str1)) TerM("Incorrect PERMJ keyword format in the input file!");
+	}
+	else {
+		TerM("Incorrect PERMJ keyword format in the input file!");
+	}
+	Permeability[1] = atof(str1);
+
+	if (!File_Search(InputFile, "PERMK")) TerM("No PERMK keyword in the input file!");
+	if (!Read_Word(InputFile, str)) TerM("Incorrect PERMK keyword format in the input file!");
+	if (!strcmp(str, "VAR")) for (i = 0; i<Index+1; i++) {
+		if (!Read_Word(InputFile, str1)) TerM("Incorrect PERMK keyword format in the input file!");
+	}
+	else if (!strcmp(str, "CON")) {
+		if (!Read_Word(InputFile, str1)) TerM("Incorrect PERMK keyword format in the input file!");
+	}
+	else if (!strcmp(str1, "IVAR")) for (i = 0; i < (Index%Nx)+1; i++){
+		if (!Read_Word(InputFile, str1)) TerM("Incorrect PERMK keyword format in the input file!");
+	}
+	else if (!strcmp(str1, "JVAR")) for (i = 0; i < (((Index - (Index%Nx)) / Nx) % Ny)+1; i++){
+		if (!Read_Word(InputFile, str1)) TerM("Incorrect PERMK keyword format in the input file!");
+	}
+	else if (!strcmp(str1, "KVAR")) for (i = 0; i < (Index - ((Index%Nx)*Nx) - ((((Index - (Index%Nx)) / Nx) % Ny)*Ny) / (Nx*Ny))+1; i++){
+		if (!Read_Word(InputFile, str1)) TerM("Incorrect PERMK keyword format in the input file!");
+	}
+	else {
+		TerM("Incorrect PERMK keyword format in the input file!");
+	}
+	Permeability[2] = atof(str1);
+
+	//////initial condition(pressure,water saturation,component present in the block)
+	//case 2 needs to be completed
+	if (!File_Search(InputFile, "INITCOND")) TerM("No INITCOND keyword in the input file!");
+	if (!Read_Word(InputFile, str)) TerM("Incorrect INITCOND keyword format in the input file!");
+	initCond = atoi(str);
+	switch (initCond) {
+		case 0:				//all
+			if (!File_Search(InputFile, "IPRESS")) TerM("No IPRESS keyword in the input file!"); //initial pressure
+			eclint = 0;
+			for (i = 0; i < Index+1; i++) {
+				if (!eclint) {
+					if (!Read_Word(InputFile, str)) TerM("Incorrect IPRESS keyword format in the input file!");
+					ECLStar(str, &eclint, &tempL);
+					Pressure = tempL;//because p is the same for the first eclint gridblock 
+							//so it just needs to evaluate one time for them 
+				}
+					eclint--;
+			}
+			
+			
+			if (!File_Search(InputFile, "IWS")) TerM("No IWS keyword in the input file!"); //Initial water saturation
+			eclint = 0;
+			for (i = 0; i < Index + 1; i++) {
+				if (!eclint) {
+					if (!Read_Word(InputFile, str)) TerM("Incorrect IWS keyword format in the input file!");
+					ECLStar(str, &eclint, &tempL);
+					Saturation[0] = tempL;
+				}
+				eclint--;
+			}
+			
+			
+			
+			if (!File_Search(InputFile, "IGC")) TerM("No IGC keyword in the input file!"); //Initial global composition
+			eclint = 0;
+			for (i = 0; i < Index + 1; i++) for (int n = 0; n<Nc; n++)  {
+				if (!eclint) {
+					if (!Read_Word(InputFile, str)) TerM("Incorrect IGC keyword format in the input file!");
+					ECLStar(str, &eclint, &tempL);
+					Componenet[n] = templ;
+				}
+				eclint--;
+			}
+			AllFlash();  //we didn't define it yet
+			break;
+		case 1:				//same as 0 but depth variation only
+			if (!File_Search(InputFile, "IPRESS")) TerM("No IPRESS keyword in the input file!"); //initial pressure
+			for (i = 0; i < (Index - ((Index%Nx)*Nx) - ((((Index - (Index%Nx)) / Nx) % Ny)*Ny) / (Nx*Ny))+1; i++){
+				if (!Read_Word(InputFile, str)) TerM("Incorrect IPRESS keyword format in the input file!");
+			}
+			Pressure = atof(str);
+			
+			if (!File_Search(InputFile, "IWS")) TerM("No IWS keyword in the input file!"); //Initial water saturation
+			for (i = 0; i < (Index - ((Index%Nx)*Nx) - ((((Index - (Index%Nx)) / Nx) % Ny)*Ny) / (Nx*Ny)) + 1; i++){
+				if (!Read_Word(InputFile, str)) TerM("Incorrect IWS keyword format in the input file!");
+			}
+			Saturation[0] = atof(str);
+
+			if (!File_Search(fp, "IGC")) TerM("No IGC keyword in the input file!"); //Initial global composition
+			for (i = 0; i < (Index - ((Index%Nx)*Nx) - ((((Index - (Index%Nx)) / Nx) % Ny)*Ny) / (Nx*Ny)) + 1; i++)
+				for (int n = 0; n<Nc; n++)  {
+				if (!Read_Word(InputFile, str)) TerM("Incorrect IGC keyword format in the input file!");
+				Componenet[n] = templ;
+				}
+			AllFlash();
+			break;
+				
+		case 2: //compositional grading needs to be completed
+	}
 	return 0;
 }
