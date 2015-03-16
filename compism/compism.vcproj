@@ -188,6 +188,10 @@
 				RelativePath=".\GridBlock.h"
 				>
 			</File>
+			<File
+				RelativePath=".\MIfstream.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
