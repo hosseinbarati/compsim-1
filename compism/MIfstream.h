@@ -30,8 +30,8 @@ int MIfstream::ReadWord(char *rWord) {
 
 	*rWord='\0';
 	do {
-		std::ifstream::get(ch);
-		if (std::ifstream::eof()) {
+		get(ch);
+		if (eof()) {
 			return 0;		//Nothing has been read
 		}
 	} while ((ch<33) || (ch>126));
@@ -39,8 +39,8 @@ int MIfstream::ReadWord(char *rWord) {
 	while ((ch>32) && (ch<127)) {
 		*(rWord+i)=ch;
 		i++;
-		std::ifstream::get(ch);
-		if (std::ifstream::eof()) {
+		get(ch);
+		if (eof()) {
 			*(rWord+i)='\0';
 			return 1;		//Read, but end of file also encountered
 		}		
