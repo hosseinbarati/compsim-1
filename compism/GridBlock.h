@@ -25,7 +25,7 @@ GridBlock::~GridBlock(void){
 	Componenet=NULL;
 }
 
-void GridBlock::SetIndex(int Ix, int Iy, INT Iz) {
+void GridBlock::SetIndex(int Ix, int Iy, int Iz) {
 	Index=Iz*(Ny*Nx)+Iy*Nx+Ix;
 }
 
@@ -79,26 +79,94 @@ int GridBlock::ReadGridProperties(ifstream InputFile) {
 	if (!Read_Word(InputFile, str1)) TerM("Incorrect POR keyword format in the input file!");
 	if (!strcmp(str1, "VAR")) for (i = 0; i < Index+1; i++) {
 		if (!Read_Word(InputFile, str1)) TerM("Incorrect POR keyword format in the input file!");
-		}
+	}
 	else if (!strcmp(str1, "CON")){
 		if (!Read_Word(InputFile, str1)) TerM("Incorrect POR keyword format in the input file!");
-		}
+	}
 						// i < Ix
 	else if (!strcmp(str1, "IVAR")) for (i = 0; i < (Index%Nx)+1; i++){
 		if (!Read_Word(InputFile, str1)) TerM("Incorrect POR keyword format in the input file!");
-		}
+	}
 						// i < Ij
 	else if (!strcmp(str1, "JVAR")) for (i = 0; i < (((Index - (Index%Nx)) / Nx) % Ny)+1; i++){
 		if (!Read_Word(InputFile, str1)) TerM("Incorrect POR keyword format in the input file!");
-		}
+	}
 						// i << Ik
 	else if (!strcmp(str1, "KVAR")) for (i = 0; i < (Index - ((Index%Nx)*Nx) - ((((Index - (Index%Nx)) / Nx) % Ny)*Ny) / (Nx*Ny))+1; i++){
 		if (!Read_Word(InputFile, str1)) TerM("Incorrect POR keyword format in the input file!");
-		}
+	}
 	else {
 	TerM("Incorrect POR keyword format in the input file!");
 	}
 	Porosity = atof(str1);
+	
+	//PERMEABILITY
+	if (!File_Search(InputFile, "PERMI")) TerM("No PERMI keyword in the input file!");
+	if (!Read_Word(InputFile, str)) TerM("Incorrect PERMI keyword format in the input file!");
+	if (!strcmp(str, "VAR")) for (i = 0; i<Index+1; i++) {
+		if (!Read_Word(InputFile, str1)) TerM("Incorrect PERMI keyword format in the input file!");
+	}
+	else if (!strcmp(str, "CON")) {
+		if (!Read_Word(InputFile, str1)) TerM("Incorrect PERMI keyword format in the input file!");
+	}
+	else if (!strcmp(str1, "IVAR")) for (i = 0; i < (Index%Nx)+1; i++){
+		if (!Read_Word(InputFile, str1)) TerM("Incorrect PERMI keyword format in the input file!");
+	}
+	else if (!strcmp(str1, "JVAR")) for (i = 0; i < (((Index - (Index%Nx)) / Nx) % Ny)+1; i++){
+		if (!Read_Word(InputFile, str1)) TerM("Incorrect PERMI keyword format in the input file!");
+	}
+	else if (!strcmp(str1, "KVAR")) for (i = 0; i < (Index - ((Index%Nx)*Nx) - ((((Index - (Index%Nx)) / Nx) % Ny)*Ny) / (Nx*Ny))+1; i++){
+		if (!Read_Word(InputFile, str1)) TerM("Incorrect PERMI keyword format in the input file!");
+	}
+	else {
+		TerM("Incorrect PERMI keyword format in the input file!");
+	}
+	Permeability[0] = atof(str1);
+
+	if (!File_Search(InputFile, "PERMJ")) TerM("No PERMJ keyword in the input file!");
+	if (!Read_Word(InputFile, str)) TerM("Incorrect PERMJ keyword format in the input file!");
+	if (!strcmp(str, "VAR")) for (i = 0; i<Index+1; i++) {
+		if (!Read_Word(InputFile, str1)) TerM("Incorrect PERMJ keyword format in the input file!");
+	}
+	else if (!strcmp(str, "CON")) {
+		if (!Read_Word(InputFile, str1)) TerM("Incorrect PERMJ keyword format in the input file!");
+	}
+	else if (!strcmp(str1, "IVAR")) for (i = 0; i < (Index%Nx)+1; i++){
+		if (!Read_Word(InputFile, str1)) TerM("Incorrect PERMJ keyword format in the input file!");
+	}
+	else if (!strcmp(str1, "JVAR")) for (i = 0; i < (((Index - (Index%Nx)) / Nx) % Ny)+1; i++){
+		if (!Read_Word(InputFile, str1)) TerM("Incorrect PERMJ keyword format in the input file!");
+	}
+	else if (!strcmp(str1, "KVAR")) for (i = 0; i < (Index - ((Index%Nx)*Nx) - ((((Index - (Index%Nx)) / Nx) % Ny)*Ny) / (Nx*Ny))+1; i++){
+		if (!Read_Word(InputFile, str1)) TerM("Incorrect PERMJ keyword format in the input file!");
+	}
+	else {
+		TerM("Incorrect PERMJ keyword format in the input file!");
+	}
+	Permeability[1] = atof(str1);
+
+	if (!File_Search(InputFile, "PERMK")) TerM("No PERMK keyword in the input file!");
+	if (!Read_Word(InputFile, str)) TerM("Incorrect PERMK keyword format in the input file!");
+	if (!strcmp(str, "VAR")) for (i = 0; i<Index+1; i++) {
+		if (!Read_Word(InputFile, str1)) TerM("Incorrect PERMK keyword format in the input file!");
+	}
+	else if (!strcmp(str, "CON")) {
+		if (!Read_Word(InputFile, str1)) TerM("Incorrect PERMK keyword format in the input file!");
+	}
+	else if (!strcmp(str1, "IVAR")) for (i = 0; i < (Index%Nx)+1; i++){
+		if (!Read_Word(InputFile, str1)) TerM("Incorrect PERMK keyword format in the input file!");
+	}
+	else if (!strcmp(str1, "JVAR")) for (i = 0; i < (((Index - (Index%Nx)) / Nx) % Ny)+1; i++){
+		if (!Read_Word(InputFile, str1)) TerM("Incorrect PERMK keyword format in the input file!");
+	}
+	else if (!strcmp(str1, "KVAR")) for (i = 0; i < (Index - ((Index%Nx)*Nx) - ((((Index - (Index%Nx)) / Nx) % Ny)*Ny) / (Nx*Ny))+1; i++){
+		if (!Read_Word(InputFile, str1)) TerM("Incorrect PERMK keyword format in the input file!");
+	}
+	else {
+		TerM("Incorrect PERMK keyword format in the input file!");
+	}
+	Permeability[2] = atof(str1);
+
 	
 	return 0;
 }
