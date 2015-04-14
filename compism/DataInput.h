@@ -7,22 +7,21 @@ int InitialRead(ifstream InputFile) {
 	register int i, j, k;
 	GridBlock ***block;
 
-	//Dimension
-	if (!File_Search(InputFile, "GRID")) TerM("No GRID keyword in the input file!");
-	if (!Read_Word(InputFile, str)) TerM("Incorrect GRID keyword format in the input file!");
-	Nx=atoi(str);
-	if (!Read_Word(InputFile, str)) TerM("Incorrect GRID keyword format in the input file!");
-	Ny=atoi(str);
-	if (!Read_Word(InputFile, str)) TerM("Incorrect GRID keyword format in the input file!");
-	Nz=atoi(str);
+	if (!InputFile.FileSearch("GRID")) TerM("No GRID keyword in the input file!");
+	if (!InputFile.ReadWord(str)) TerM("Incorrect GRID keyword format in the input file!");
+	Nx = atoi(str);
+	cout << "Nx=" << Nx << endl;
+	if (!InputFile.ReadWord(str)) TerM("Incorrect GRID keyword format in the input file!");
+	Ny = atoi(str);
+	if (!InputFile.ReadWord(str)) TerM("Incorrect GRID keyword format in the input file!");
+	Nz = atoi(str);
 
-	//Number of Components
-	if (!File_Search(InputFile, "NC")) TerM("No NC keyword in the input file!");
-	if (!Read_Word(InputFile, str)) TerM("Incorrect NC keyword format in the input file!");
-	PNc=atoi(str);
-	if (!Read_Word(InputFile, str)) TerM("Incorrect NC keyword format in the input file!");
-	UNc=atoi(str);
-	Nc=PNc+UNc;
+	if (!InputFile.FileSearch("NC")) TerM("No NC keyword in the input file!");
+	if (!InputFile.ReadWord(str)) TerM("Incorrect NC keyword format in the input file!");
+	PNc = atoi(str);
+	if (!InputFile.ReadWord(str)) TerM("Incorrect NC keyword format in the input file!");
+	UNc = atoi(str);
+	Nc = PNc + UNc;
 
 
 	//Allocate GridBlock Objects
