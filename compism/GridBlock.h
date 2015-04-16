@@ -14,6 +14,9 @@ public:
 	~GridBlock();
 	void SetIndex(int, int, int);
 	int ReadGridProperties(ifstream);
+	void setDimI(FloatType);
+	void setDimJ(FloatType);
+	void setDimK(FloatType);
 };
 
 GridBlock::GridBlock(void) {
@@ -23,6 +26,18 @@ GridBlock::GridBlock(void) {
 GridBlock::~GridBlock(void){
 	delete[] Componenet;
 	Componenet=NULL;
+}
+
+void GridBlock::setDimI(FloatType DimI){
+	Dimension[0]=DimI;
+}
+
+void GridBlock::setDimJ(FloatType DimJ){
+	Dimension[1]=DimJ;
+}
+
+void GridBlock::setDimK(FloatType DimK){
+	Dimension[2]=DimK;
 }
 
 void GridBlock::SetIndex(int Ix, int Iy, int Iz) {
