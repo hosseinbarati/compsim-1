@@ -29,6 +29,23 @@ void GridBlock::SetIndex(int Ix, int Iy, int Iz) {
 	Index=Iz*(Ny*Nx)+Iy*Nx+Ix;
 }
 
+
+void GridBlock::SetDimI(){
+	if (!InputFile.FileSearch("DI")) TerM("No DI keyword in the input file!");
+	if (!InputFile.ReadWord(str)) TerM("Incorrect DI keyword format in the input file!");
+	if (!strcmp(str, "VAR")) for (i=0; i<Index+1; i++) { 
+			if (!InputFile.ReadWord(str1)) TerM("Incorrect DI keyword format in the input file!");	
+	}
+	else if (!strcmp(str, "CON")){
+		if (!InputFile.ReadWord(str1))  TerM("Incorrect DI keyword format in the input file!");		
+	}
+	else {
+		TerM("Incorrect DI keyword format in the input file!");
+	}
+	Dimension[0]=atof(str1);
+}
+
+
 int GridBlock::ReadGridProperties(ifstream InputFile) {
 	char str[MAX_STRING_LENGTH], str1[MAX_STRING_LENGTH];
 	register int i;
