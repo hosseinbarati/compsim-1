@@ -37,7 +37,7 @@ int InitialRead(ifstream InputFile) {
 		for (j=0; j<Ny; j++) {
 			for (i=0; i<Nx; i++) {
 				block[i][j][k].SetIndex(i, j, k);
-				block[i][j][k].ReadGridProperties(InputFile);
+				block[i][j][k].SetDimI(InputFile);
 		}
 	}
 	
