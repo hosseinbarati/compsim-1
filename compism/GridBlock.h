@@ -26,6 +26,7 @@ public:
 	~GridBlock();
 	void SetIndex(int, int, int);
 	int ReadGridProperties(ifstream);
+	void SetDimX(FloatType);
 };
 
 GridBlock::GridBlock(void) {
@@ -59,7 +60,21 @@ void GridBlock::SetIndex(int Ix, int Iy, int Iz) {
 	Index=Iz*(Ny*Nx)+Iy*Nx+Ix;
 }
 
-int GridBlock::ReadGridProperties(ifstream InputFile) {
+void GridBlock::SetDimX(FloatType Dx) {
+	Dimension[0]=Dx;
+}
+void GridBlock::SetDimY(FloatType Dy) {
+	Dimension[1]=Dy;
+}
+void GridBlock::SetDimZ(FloatType Dz) {
+	Dimension[2]=Dz;
+}
+
+void GridBlock::SetPorosity(FloatType Por) {
+	Porosity=Por;
+}
+
+/*int GridBlock::ReadGridProperties(ifstream InputFile) {
 	char str[MAX_STRING_LENGTH], str1[MAX_STRING_LENGTH];
 	register int i;
 	MIfstream InputFile;
@@ -561,4 +576,4 @@ int GridBlock::ReadGridProperties(ifstream InputFile) {
 	}
 	firstflash(0.5, composition, AC, resTemp, TCRIT, PCRIT, P[refL], true);
 	return 0;
-}
+}*/
