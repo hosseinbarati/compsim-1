@@ -27,33 +27,16 @@ public:
 	void SetIndex(int, int, int);
 	int ReadGridProperties(ifstream);
 	void SetDimX(FloatType);
+	FloatType *compJac(int , int , int )
 };
 
 GridBlock::GridBlock(void) {
-	Componenet=new FloatType[Nc+1];
-	MW = new FloatType[Nc+1];
-	TCRIT = new FloatType[Nc+1];
-	PCRIT = new FloatType[Nc+1];
-	VCRIT = new FloatType[Nc+1];
-	AC = new FloatType[Nc+1];
-	PARACHOR = new FloatType[Nc+1];
+	Componenet=new FloatType[Nc];
 }
 
 GridBlock::~GridBlock(void){
 	delete[] Componenet;
 	Componenet=NULL;
-	delete[] TCRIT;
-	TCRIT = NULL;
-	delete[] VCRIT;
-	VCRIT = NULL;
-	delete[] AC;
-	AC = NULL;
-	delete[] PARACHOR;
-	PARACHOR = NULL;
-	delete[] MW;
-	MW = NULL;
-	delete[] P;
-	P = NULL;
 }
 
 void GridBlock::SetIndex(int Ix, int Iy, int Iz) {
@@ -577,3 +560,208 @@ void GridBlock::SetPorosity(FloatType Por) {
 	firstflash(0.5, composition, AC, resTemp, TCRIT, PCRIT, P[refL], true);
 	return 0;
 }*/
+FloatType *GridBlock::compJac(int Ix, int Iy, int Iz) {
+	FloatType Ul, Wl, Al, Bl, Zl;
+	FloatType tl, d1, d2, t1l;
+	FloatType Cal, Cbl;
+	FloatType dAdxl, dBdxl, dZdxl, phiL, phiG;
+	FloatType dAAdxl, dBBdxl, DDl,EEl, FFl;
+	FloatType dFFdxl, dEEdxl, dDDdxl, dPhidxl;
+	FloatType dAdpl, dBdpl, dZdpl;
+	FloatType dAAdpl, dBBdpl, dDDdpl, dFFdpl, dPhidpl;
+	FloatType dUdpl, dWdpl;
+	FloatType dUdxl, dWdxl;
+	register int i, j, k, n;
+
+	FloatType XmTol;
+
+	FloatType dAdpg, dBdpg, dZdpg;
+	FloatType dAAdpg, dBBdpg, dDDdpg, dFFdpg, dPhidpg;
+	FloatType dUdpg, dWdpg;
+	FloatType tempSQR;
+	FloatType *Xm;
+	FloatType **compJac;
+	FloatType sMw;
+	FloatType tempDens;
+
+	compJac = new FloatType*[Nc+1];
+	for (i = 0; i < Nc; i++){
+		compJac[i] = new FloatType[Nc+1];
+	}
+	sMw = 0;
+	for (i = 0; i < Nc; i++){
+		sMw += fluidProp[i][Mw];
+	}
+
+	do {
+
+		tempDens = sMw / (RGAS*resTemp);
+
+		Al = 0;
+		Bl = 0;
+		for (i = 0; i<Nc; i++) {
+			Bl += Xm[i] * fluidProp[i][EOS_B];
+			for (j = 0; j<Nc; j++) {
+				tempSQR = sqrt(fluidProp[i][EOS_A] * fluidProp[j][EOS_A])*bic[i][j];
+				Al += Xm[i] * Xm[j] * tempSQR;
+			}
+		}
+
+		Cal = Al;
+		Cbl = Bl;
+		Al *= Xm[Nc] / (RGAS*RGAS*resTemp*resTemp);
+		Bl *= Xm[Nc] / (RGAS*resTemp);
+
+		dAdpl = Cal / (RGAS*RGAS*resTemp*resTemp);
+		dBdpl = Cbl / (RGAS*resTemp);
+
+		if (SRK) {
+			Ul = Bl;
+			Wl = 0;
+			Ug = Bg;
+			Wg = 0;
+
+			dUdpl = dBdpl;
+			dWdpl = 0;
+
+			d1 = 1;
+			d2 = 0;
+		}
+		else if (PR) {
+			Ul = 2 * Bl;
+			Wl = Bl;
+
+			dUdpl = 2 * dBdpl;
+			dWdpl = dBdpl;
+			
+			d1 = 1 + SQRT2;
+			d2 = 1 - SQRT2;
+		}
+
+		Zl = Solve_Z(-(1 + Bl - Ul), Al - Bl*Ul - Ul - Wl*Wl, -(Al*Bl - Bl*Wl*Wl - Wl*Wl), 'l');
+
+		dZdpl = -(dAdpl*(Zl - Bl) + dBdpl*(-Zl*Zl - Ul*Zl - Al + Wl*Wl) + dUdpl*(Zl*Zl - Bl*Zl - Zl) + dWdpl*(-2 * Wl*Zl + 2 * Bl*Wl + 2 * Wl)) / (3 * Zl*Zl - 2 * Zl*(1 + Bl - Ul) + Al - Bl*Ul - Ul - Wl*Wl);		//Modified
+
+		for (i = 0; i<Nc; i++) {
+			tl = 0;
+			for (j = 0; j<Nc; j++) {	//FFSS
+				tempSQR = sqrt(fluidProp[i][EOS_A] * fluidProp[j][EOS_A])*bic[i][j];
+				tl += Xm[j] * tempSQR;
+			}
+			t1l = fluidProp[i][EOS_B] / Cbl;
+
+			EEl = 2 * tl / Cal - t1l;
+
+			DDl = Al / (Bl*(d1 - d2));
+
+			FFl = log((Zl + d2*Bl) / (Zl + d1*Bl));
+
+			phiL = exp(t1l*(Zl - 1) - log(Zl - Bl) + DDl*EEl*FFl);
+
+			dAAdpl = fluidProp[i][EOS_B] * dZdpl / Cbl;
+
+			dBBdpl = (dBdpl - dZdpl) / (Zl - Bl);
+
+			dDDdpl = (Bl*dAdpl - Al*dBdpl) / (Bl*Bl*(d1 - d2));
+
+			dFFdpl = (dZdpl + d2*dBdpl) / (Zl + d2*Bl) - (dZdpl + d1*dBdpl) / (Zl + d1*Bl);
+
+			dPhidpl = phiL*(dAAdpl + dBBdpl + EEl*(dDDdpl*FFl + DDl*dFFdpl));	
+
+
+
+
+			//i: Row of Jac
+			//k: Col of Jac
+			for (k = 0; k<Nc+1; k++) {
+				dAdxl = 0;
+				for (n = 0; n<Nc; n++) {		//SSFF
+					dAdxl += Xm[n] * sqrt(fluidProp[n][EOS_A] * fluidProp[k][EOS_A])*bic[n][k];
+					//This loop can be reduced
+				}
+				dAdxl *= 2 * Xm[Nc] / (RGAS*RGAS*resTemp*resTemp);
+				dBdxl = fluidProp[k][EOS_B] * Xm[Nc] / (RGAS*resTemp);
+
+				if (SRK) {
+					dUdxl = dBdxl;
+					dWdxl = 0;
+				}
+				else if (PR) {
+					dUdxl = 2 * dBdxl;
+					dWdxl = dBdxl;
+				}
+
+
+
+				dZdxl = -(dAdxl*(Zl - Bl) + dBdxl*(-Zl*Zl - Ul*Zl - Al + Wl*Wl) + dUdxl*(Zl*Zl - Bl*Zl - Zl) + dWdxl*(-2 * Wl*Zl + 2 * Bl*Wl + 2 * Wl)) / (3 * Zl*Zl - 2 * Zl*(1 + Bl - Ul) + Al - Bl*Ul - Ul - Wl*Wl);		//Modified
+
+				dAAdxl = -fluidProp[k][EOS_B] * fluidProp[i][EOS_B] * (Zl - 1) / (Cbl*Cbl) + fluidProp[i][EOS_B] * dZdxl / Cbl;
+
+				dBBdxl = (dBdxl - dZdxl) / (Zl - Bl);
+
+				dDDdxl = (dAdxl*Bl - dBdxl*Al) / (Bl*Bl*(d1 - d2));
+
+				dFFdxl = (dZdxl + d2*dBdxl) / (Zl + d2*Bl) - (dZdxl + d1*dBdxl) / (Zl + d1*Bl);
+
+				dEEdxl = 2 * (bic[i][k] * sqrt(fluidProp[i][EOS_A] * fluidProp[k][EOS_A]) / Cal - dAdxl*RGAS*RGAS*resTemp*resTemp*tl / (Xm[Nc] * Cal*Cal)) + fluidProp[i][EOS_B] * fluidProp[k][EOS_B] / (Cbl*Cbl);
+
+				dPhidxl = phiL*(dAAdxl + dBBdxl + dDDdxl*EEl*FFl + DDl*dEEdxl*FFl + DDl*EEl*dFFdxl);
+
+
+
+				double tempX;
+				tempX = (Xm[Nc] / RGAS*resTEmp)*sMw;
+
+				
+				if (i < Nc){
+					if (k < Nc){
+						if (i != k){
+							compJac[i][k] = Xm[i] * Xm[Nc] * dPhidxl;
+						}
+						else
+						{
+							compJac[i][k] = phiL*Xm[Nc] + Xm[i] * Xm[Nc] * dPhidxl;
+						}
+					}
+					else if (k==Nc)
+					{
+						compJac[i][k] = Xm[i] * phiL + Xm[i] * Xm[Nc] * dPhidpl;
+					}
+				}
+				else if (i == Nc){
+					if (k < Nc){
+						compJac[i][k] = -Xm[Nc] * tempDens*dZdxl / (Zl*Zl);
+					}
+					else if (k == Nc)
+					{
+						compJac[i][k] = tempDens*(Zl - Xm[Nc] * dZdpl) / (z*z);
+					}
+					
+				}
+				else{
+					cout << "Wrong calculation" << endl;
+					exit(-1);
+				}
+
+			}
+		}
+
+		//Scaling(satJac, satAns, Nc+1);
+		//biCGStab(satJac, satAns, Xms, Nc+1);
+		//GaussJ(satJac, satAns, Xms, Nc+1);
+		//MKLS(satJac, satAns, Xms, Nc + 1);
+
+
+		XmTol = 0;
+		//for (i = 0; i<(Nc + 1); i++) {
+			//Xm[i] += Xms[i];
+			//XmTol += fabs(Xms[i] / Xm[i]);
+		//}
+		//XmTol /= (Nc + 1);
+
+		//XmTol=In_Product(Xms, Xms, Nc+1);
+
+	} while ((XmTol>XMTOL) && (fabs(Xms[Nc])>PRESSTOL));
+
+	return *Xm;
+}
