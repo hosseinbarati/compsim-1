@@ -27,7 +27,7 @@ public:
 	void SetIndex(int, int, int);
 	int ReadGridProperties(ifstream);
 	void SetDimX(FloatType);
-	FloatType *compJac(int , int , int )
+	void compJac(int , int , int )
 };
 
 GridBlock::GridBlock(void) {
@@ -560,7 +560,7 @@ void GridBlock::SetPorosity(FloatType Por) {
 	firstflash(0.5, composition, AC, resTemp, TCRIT, PCRIT, P[refL], true);
 	return 0;
 }*/
-FloatType *GridBlock::compJac(int Ix, int Iy, int Iz) {
+void GridBlock::compJac(int Ix, int Iy, int Iz) {
 	FloatType Ul, Wl, Al, Bl, Zl;
 	FloatType tl, d1, d2, t1l;
 	FloatType Cal, Cbl;
@@ -763,5 +763,8 @@ FloatType *GridBlock::compJac(int Ix, int Iy, int Iz) {
 
 	} while ((XmTol>XMTOL) && (fabs(Xms[Nc])>PRESSTOL));
 
-	return *Xm;
+	for(i=0;i<Nc;i++){
+		cout<<"x["<<i<<"]="<<Xm[i]<<endl;
+	}
+	cout<<"P="<<Xm[Nc]<<endl;
 }
