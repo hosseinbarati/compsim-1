@@ -560,7 +560,7 @@ void GridBlock::SetPorosity(FloatType Por) {
 	firstflash(0.5, composition, AC, resTemp, TCRIT, PCRIT, P[refL], true);
 	return 0;
 }*/
-void GridBlock::compJac(int Ix, int Iy, int Iz) {
+void GridBlock::flash(int Ix, int Iy, int Iz) {
 	FloatType Ul, Wl, Al, Bl, Zl;
 	FloatType tl, d1, d2, t1l;
 	FloatType Cal, Cbl;
@@ -579,30 +579,108 @@ void GridBlock::compJac(int Ix, int Iy, int Iz) {
 	FloatType dAAdpg, dBBdpg, dDDdpg, dFFdpg, dPhidpg;
 	FloatType dUdpg, dWdpg;
 	FloatType tempSQR;
-	FloatType *Xm;
+	FloatType *Xm, *b;
 	FloatType **compJac;
-	FloatType sMw;
+	FloatType sMw, AvMw, MwRef;
 	FloatType tempDens;
+	FloatType deltaH;
+	FloatType tempMw;
+	FloatType tempPow;
+	FloatType f2;
+	FloatType ZlRef, rhoRef;
+	FloatType rho;
+
 
 	compJac = new FloatType*[Nc+1];
 	for (i = 0; i < Nc; i++){
 		compJac[i] = new FloatType[Nc+1];
 	}
+
+	Al = 0;
+	Bl = 0;
+	for (i = 0; i<Nc; i++) {
+		Bl += Xm[i] * fluidProp[i][EOS_B];
+		for (j = 0; j<Nc; j++) {
+			tempSQR = sqrt(fluidProp[i][EOS_A] * fluidProp[j][EOS_A])*bic[i][j]; //bic[i][j] or (1-bic[i][j])
+			Al += Xm[i] * Xm[j] * tempSQR;
+		}
+	}
+
+	Cal = Al;
+	Cbl = Bl;
+	Al *= RefP / (RGAS*RGAS*resTemp*resTemp);
+	Bl *= RefP / (RGAS*resTemp);
+
+
+	if (SRK) {
+		Ul = Bl;
+		Wl = 0;
+
+		d1 = 1;
+		d2 = 0;
+	}
+	else if (PR) {
+		Ul = 2 * Bl;
+		Wl = Bl;
+
+		d1 = 1 + SQRT2;
+		d2 = 1 - SQRT2;
+	}
+
+	ZlRef = Solve_Z(-(1 + Bl - Ul), Al - Bl*Ul - Ul - Wl*Wl, -(Al*Bl - Bl*Wl*Wl - Wl*Wl), 'l');
+
+
+	for (i = 0; i<Nc; i++) {
+		tl = 0;
+		for (j = 0; j<Nc; j++) {	//FFSS
+			tempSQR = sqrt(fluidProp[i][EOS_A] * fluidProp[j][EOS_A])*bic[i][j];
+			tl += Xm[j] * tempSQR;
+		}
+		t1l = fluidProp[i][EOS_B] / Cbl;
+
+		EEl = 2 * tl / Cal - t1l;
+
+		DDl = Al / (Bl*(d1 - d2));
+
+		FFl = log((Zl + d2*Bl) / (Zl + d1*Bl));
+
+		phiL = exp(t1l*(Zl - 1) - log(Zl - Bl) + DDl*EEl*FFl);
+
+		f[i] = RefP * comp[i] * phiL;
+		
+		}
+
+	MwRef = 0;
+	for (i = 0; i < Nc; i++){
+		MwRef += comp[i] * fluidProp[i][Mw];
+	}
+
+	rhoRef = Pref * MwRef / (ZlRef * RGas * resTemp);
+
+
+	
+
 	sMw = 0;
 	for (i = 0; i < Nc; i++){
 		sMw += fluidProp[i][Mw];
 	}
 
+	
 	do {
 
-		tempDens = sMw / (RGAS*resTemp);
+		AvMw = 0;
+		for (i = 0; i < Nc; i++){
+			AvMw += Xm[i] * fluidProp[i][Mw];
+		}
+
+		tempDens = Xm[Nc] / (RGAS*resTemp);
 
 		Al = 0;
 		Bl = 0;
 		for (i = 0; i<Nc; i++) {
 			Bl += Xm[i] * fluidProp[i][EOS_B];
 			for (j = 0; j<Nc; j++) {
-				tempSQR = sqrt(fluidProp[i][EOS_A] * fluidProp[j][EOS_A])*bic[i][j];
+				tempSQR = sqrt(fluidProp[i][EOS_A] * fluidProp[j][EOS_A])*bic[i][j]; //bic[i][j] or (1-bic[i][j])
 				Al += Xm[i] * Xm[j] * tempSQR;
 			}
 		}
@@ -618,8 +696,6 @@ void GridBlock::compJac(int Ix, int Iy, int Iz) {
 		if (SRK) {
 			Ul = Bl;
 			Wl = 0;
-			Ug = Bg;
-			Wg = 0;
 
 			dUdpl = dBdpl;
 			dWdpl = 0;
@@ -669,7 +745,7 @@ void GridBlock::compJac(int Ix, int Iy, int Iz) {
 			dPhidpl = phiL*(dAAdpl + dBBdpl + EEl*(dDDdpl*FFl + DDl*dFFdpl));	
 
 
-
+			
 
 			//i: Row of Jac
 			//k: Col of Jac
@@ -708,38 +784,45 @@ void GridBlock::compJac(int Ix, int Iy, int Iz) {
 				dPhidxl = phiL*(dAAdxl + dBBdxl + dDDdxl*EEl*FFl + DDl*dEEdxl*FFl + DDl*EEl*dFFdxl);
 
 
-
-				double tempX;
-				tempX = (Xm[Nc] / RGAS*resTEmp)*sMw;
-
+				f2 = Xm[Nc] * Xm[i] * phiL;
+				
+				tempMw = AvMw / (RGAS*resTemp);
+				pot = GravCons * deltaH;
+				
+				tempPow = (fluidProp[i][Mw]) / (RGAS*resTemp);
+				
 				
 				if (i < Nc){
+					f2 = Xm[Nc] * Xm[i] * phiL;
+					b[i] = f2 - f[i] * exp(tempPow*pot);
 					if (k < Nc){
 						if (i != k){
-							compJac[i][k] = Xm[i] * Xm[Nc] * dPhidxl;
+							compJac[i][k] = Xm[i] * Xm[Nc] * dPhidxl * exp(tempPow*pot);
 						}
 						else
 						{
-							compJac[i][k] = phiL*Xm[Nc] + Xm[i] * Xm[Nc] * dPhidxl;
+							compJac[i][k] = (phiL*Xm[Nc] + Xm[i] * Xm[Nc] * dPhidxl)*exp(tempPow*pot);
 						}
 					}
 					else if (k==Nc)
 					{
-						compJac[i][k] = Xm[i] * phiL + Xm[i] * Xm[Nc] * dPhidpl;
+						compJac[i][k] = (Xm[i] * phiL + Xm[i] * Xm[Nc] * dPhidpl) * exp(tempPow*pot);
 					}
 				}
 				else if (i == Nc){
+					rho = Xm[Nc] * sMw / (Zl*RGAS*resTemp);
+					b[i] = Xm[Nc] - Pref + rhoRef*GravCons*h1 - rho*GravCons*h2;
 					if (k < Nc){
-						compJac[i][k] = -Xm[Nc] * tempDens*dZdxl / (Zl*Zl);
+						compJac[i][k] = tempDens*(-dZdxl*AvMw / (z*z) + sMw / z) * GravCons * h2;
 					}
 					else if (k == Nc)
 					{
-						compJac[i][k] = tempDens*(Zl - Xm[Nc] * dZdpl) / (z*z);
+						compJac[i][k] = tempMw*(Zl - Xm[Nc] * dZdpl) / (z*z) * GravCons * h2 ;
 					}
 					
 				}
 				else{
-					cout << "Wrong calculation" << endl;
+					cout << "Wrong allocation" << endl;
 					exit(-1);
 				}
 
@@ -763,8 +846,6 @@ void GridBlock::compJac(int Ix, int Iy, int Iz) {
 
 	} while ((XmTol>XMTOL) && (fabs(Xms[Nc])>PRESSTOL));
 
-	for(i=0;i<Nc;i++){
-		cout<<"x["<<i<<"]="<<Xm[i]<<endl;
-	}
-	cout<<"P="<<Xm[Nc]<<endl;
+	
+}
 }
